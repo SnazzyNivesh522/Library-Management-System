@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Book Recommendations{% endblock %}
+
+{% block content %}
+<h1>Recommended Books</h1>
+
+<div class="row">
+    {% for book in recommended_books %}
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ book.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ book.author }}</h6>
+                <p class="card-text">Genre: {{ book.genre }}</p>
+                <a href="{{ url_for('books.book_detail', book_id=book.id) }}" class="btn btn-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

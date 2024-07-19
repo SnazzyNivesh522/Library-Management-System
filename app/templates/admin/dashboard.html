@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<h1>Admin Dashboard</h1>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">Total Users</h5>
+                <p class="card-text">{{ total_users }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">Total Books</h5>
+                <p class="card-text">{{ total_books }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">Currently Borrowed</h5>
+                <p class="card-text">{{ total_borrowed }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">Recent Borrows (30 days)</h5>
+                <p class="card-text">{{ recent_borrows }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h3>Most Borrowed Books</h3>
+        <canvas id="mostBorrowedChart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <h3>Top Users</h3>
+        <canvas id="topUsersChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Most Borrowed Books Chart
+    var ctx = document.getElementById('mostBorrowedChart').getContext('2d');
+    var mostBorrowedChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [{% for book in most_borrowed %}"{{ book.title }}"{% if not loop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Number of Borrows',
+                data: [{% for book in most_borrowed %}{{ book.borrow_count }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Top Users Chart
+    var ctx2 = document.getElementById('topUsersChart').getContext('2d');
+    var topUsersChart = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: [{% for user in top_users %}"{{ user.username }}"{% if not loop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Number of Borrows',
+                data: [{% for user in top_users %}{{ user.borrow_count }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

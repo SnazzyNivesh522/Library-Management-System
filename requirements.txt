@@ -1,0 +1,12 @@
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+Flask-WTF
+Flask-Bcrypt
+Flask-Mail
+python-dotenv
+requests
+google-auth
+google-auth-oauthlib
+Flask-APScheduler

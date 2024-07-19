@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-section">
+    <h2 class="mb-4">{{ book.title }}</h2>
+
+    <div class="row">
+        <div class="col-md-4">
+            {% if book.image_link %}
+                <img src="{{ book.image_link }}" alt="{{ book.title }} Cover" class="img-fluid">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/default_book_cover.jpg') }}" alt="Default Book Cover" class="img-fluid">
+            {% endif %}
+        </div>
+        <div class="col-md-8">
+            <p><strong>Author:</strong> {{ book.author }}</p>
+            <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+            <p><strong>Publisher:</strong> {{ book.publisher }}</p>
+            <p><strong>Year:</strong> {{ book.year }}</p>
+            <p><strong>Genre:</strong> {{ book.genre }}</p>
+            <p><strong>Available Copies:</strong> {{ book.quantity }}</p>
+
+            {% if current_user.is_authenticated %}
+                {% if book.quantity > 0 %}
+                    <form method="POST" action="{{ url_for('books.checkout_book', book_id=book.id) }}">
+                        <input type="submit" value="Borrow Book" class="btn btn-primary">
+                    </form>
+                {% else %}
+                    <p>This book is currently unavailable.</p>
+                {% endif %}
+            {% else %}
+                <p>Please <a href="{{ url_for('auth.login') }}">login</a> to borrow this book.</p>
+            {% endif %}
+
+            {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_librarian) %}
+                <div class="form-group mt-3">
+                    <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('books.update_book', book_id=book.id) }}">Update Book</a>
+                    <form action="{{ url_for('books.delete_book', book_id=book.id) }}" method="POST">
+                        <input type="submit" value="Delete Book" class="btn btn-danger btn-sm mt-1 mb-1">
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr>
+    
+    <h3 class="mt-4">Recommendations:</h3>
+    {% if recommendations %}
+        <div class="row">
+            {% for recommendation in recommendations %}
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        {% if recommendation.image_link %}
+                            <img src="{{ recommendation.image_link }}" class="card-img-top" alt="{{ recommendation.title }} Cover">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default_book_cover.jpg') }}" class="card-img-top" alt="Default Book Cover">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="{{ url_for('books.book_detail', book_id=recommendation.id) }}">{{ recommendation.title }}</a></h5>
+                            <p class="card-text">by {{ recommendation.author }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No recommendations available at this time.</p>
+    {% endif %}
+
+</div>
+{% endblock content %}

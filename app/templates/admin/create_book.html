@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Add New Book{% endblock %}
+{% block content %}
+    <h2>Add New Book</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.isbn.label }} {{ form.isbn }}
+        </div>
+        <div>
+            {{ form.title.label }} {{ form.title }}
+        </div>
+        <div>
+            {{ form.author.label }} {{ form.author }}
+        </div>
+        <div>
+            {{ form.publisher.label }} {{ form.publisher }}
+        </div>
+        <div>
+            {{ form.year.label }} {{ form.year }}
+        </div>
+        <div>
+            {{ form.genre.label }} {{ form.genre }}
+        </div>
+        <div>
+            {{ form.quantity.label }} {{ form.quantity }}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+{% endblock %}

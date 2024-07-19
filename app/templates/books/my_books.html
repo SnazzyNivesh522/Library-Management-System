@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}My Books{% endblock %}
+{% block content %}
+    <h2>My Borrowed Books</h2>
+    <ul>
+        {% for borrowed_book in borrowed_books %}
+            <li>
+                {{ borrowed_book.book.title }} ({{ borrowed_book.borrow_date.strftime('%Y-%m-%d') }})
+                {% if not borrowed_book.is_returned %}
+                    <form method="POST" action="{{ url_for('books.return_book', book_id=borrowed_book.book.id) }}">
+                        {{ form.hidden_tag() }}
+                        <div>
+                            {{ form.submit }}
+                        </div>
+                    </form>
+                {% else %}
+                    (Returned)
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

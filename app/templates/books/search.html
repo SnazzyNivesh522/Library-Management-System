@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Search Books{% endblock %}
+
+{% block content %}
+<h1>Search Books</h1>
+<form method="POST" action="{{ url_for('books.search') }}">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.query.label(class="form-control-label") }}
+        {{ form.query(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
+{% endblock %}

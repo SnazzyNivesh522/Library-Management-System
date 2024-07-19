@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="mb-3">Books borrowed by {{ user.username }} ({{ borrowed_books|length }})</h1>
+    {% for borrowed_book in borrowed_books %}
+        <article class="media content-section">
+            <div class="media-body">
+                <h2><a class="article-title" href="{{ url_for('books.book_detail', book_id=borrowed_book.book.id) }}">{{ borrowed_book.book.title }}</a></h2>
+                <p class="article-content">Author: {{ borrowed_book.book.author }}</p>
+                <p class="article-content">Borrowed on: {{ borrowed_book.borrow_date.strftime('%Y-%m-%d') }}</p>
+                {% if borrowed_book.is_returned %}
+                    <p class="article-content">Returned on: {{ borrowed_book.return_date.strftime('%Y-%m-%d') }}</p>
+                {% else %}
+                    <p class="article-content">Due date: {{ (borrowed_book.borrow_date + timedelta(days=14)).strftime('%Y-%m-%d') }}</p>
+                {% endif %}
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}

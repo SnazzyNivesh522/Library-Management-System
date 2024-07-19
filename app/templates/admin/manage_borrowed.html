@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Borrowed Books{% endblock %}
+
+{% block content %}
+<h1>Manage Borrowed Books</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Book Title</th>
+            <th>Borrower</th>
+            <th>Borrow Date</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for borrowed in borrowed_books %}
+        <tr>
+            <td>{{ borrowed.book.title }}</td>
+            <td>{{ borrowed.borrower.username }}</td>
+            <td>{{ borrowed.borrow_date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ (borrowed.borrow_date + timedelta(days=14)).strftime('%Y-%m-%d') }}</td>
+            <td>
+                <a href="{{ url_for('books.return_book', book_id=borrowed.book.id) }}" class="btn btn-sm btn-primary">Return</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
