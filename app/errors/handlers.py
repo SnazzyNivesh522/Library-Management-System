@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template
+from jinja2 import TemplateNotFound
 
 errors = Blueprint('errors', __name__)
 
@@ -13,3 +14,7 @@ def error_403(error):
 @errors.app_errorhandler(500)
 def error_500(error):
     return render_template('errors/500.html'), 500
+
+@errors.app_errorhandler(TemplateNotFound)
+def template_not_found(error):
+    return render_template('errors/404.html'), 404

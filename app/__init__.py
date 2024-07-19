@@ -35,7 +35,7 @@ def create_app(config_class=Config):
     from app.books.routes import books
     from app.users.routes import users
     from app.admin.routes import admin
-    from app.errors import errors 
+    from app.errors.handlers import errors 
 
     app.register_blueprint(main)
     app.register_blueprint(auth)
@@ -46,8 +46,8 @@ def create_app(config_class=Config):
 
 
     with app.app_context():
-            db.create_all()
-            print('Database tables created or verified.')
+        db.create_all()
+        print('Database tables created or verified.')
 
 
     return app
