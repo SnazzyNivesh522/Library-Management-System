@@ -24,8 +24,9 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file) if current_user.image_file else None
+    has_profile_picture = bool(current_user.image_file)  # New line: Determine if user has picture
     return render_template('users/account.html', title='Account',
-                           image_file=image_file, form=form)
+                           image_file=image_file, form=form, has_profile_picture=has_profile_picture)  # Pass the flag to the template
 
 @users.route("/user/<string:username>")
 def user_books(username):

@@ -26,6 +26,9 @@ body {
     .book-item {
         flex: 0 0 calc(50% - 20px);
     }
+    .account-img {
+        max-width: 30%; 
+    }
 }
 
 @media (max-width: 576px) {
@@ -51,3 +54,8 @@ body {
     background-color: #0056b3;
     border-color: #0056b3;
 }
+.account-img {
+    max-width: auto; 
+    height: 5rem;  
+}
+
