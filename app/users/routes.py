@@ -4,6 +4,7 @@ from app import db
 from app.models import User, BorrowedBook
 from app.users.forms import UpdateAccountForm
 from app.utils import save_picture
+from datetime import timedelta
 
 users = Blueprint('users', __name__)
 
@@ -32,4 +33,4 @@ def account():
 def user_books(username):
     user = User.query.filter_by(username=username).first_or_404()
     borrowed_books = BorrowedBook.query.filter_by(user_id=user.id).order_by(BorrowedBook.borrow_date.desc()).all()
-    return render_template('users/user_books.html', user=user, borrowed_books=borrowed_books)
+    return render_template('users/user_books.html', user=user, borrowed_books=borrowed_books,timedelta=timedelta)

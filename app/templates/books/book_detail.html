@@ -26,7 +26,12 @@
                         <input type="submit" value="Borrow Book" class="btn btn-primary">
                     </form>
                 {% else %}
-                    <p>This book is currently unavailable.</p>
+                    {% if borrowed_by_current_user %}
+                        <p>This book is currently borrowed by you.</p>
+                        <a href="{{ url_for('books.return_book', book_id=book.id) }}" class="btn btn-primary">Return</a>
+                    {% else %}
+                        <p>This book is currently unavailable.</p>
+                    {% endif %}
                 {% endif %}
             {% else %}
                 <p>Please <a href="{{ url_for('auth.login') }}">login</a> to borrow this book.</p>

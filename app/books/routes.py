@@ -29,7 +29,8 @@ def search():
 @books.route("/book/<int:book_id>")
 def book_detail(book_id):
     book = Book.query.get_or_404(book_id)
-    return render_template('books/book_detail.html', title=book.title, book=book)
+    borrowed_by_current_user = BorrowedBook.query.filter_by(book_id=book_id, user_id=current_user.id, is_returned=False).first()
+    return render_template('books/book_detail.html', title=book.title, book=book, borrowed_by_current_user=borrowed_by_current_user)
 
 @books.route("/book/<int:book_id>/checkout", methods=['GET', 'POST'])
 @login_required

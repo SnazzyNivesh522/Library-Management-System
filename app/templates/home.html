@@ -6,13 +6,15 @@
         <div class="col-md-8">
             <h2>Recent Books</h2>
             {% for book in recent_books %}
-                <article class="media content-section">
-                    <div class="media-body">
-                        <h3><a class="article-title" href="{{ url_for('books.book_detail', book_id=book.id) }}">{{ book.title }}</a></h3>
-                        <p class="article-content">Author: {{ book.author }}</p>
-                        <p class="article-content">ISBN: {{ book.isbn }}</p>
-                    </div>
-                </article>
+                {% if book.quantity > 0 %}
+                    <article class="media content-section">
+                        <div class="media-body">
+                            <h3><a class="article-title" href="{{ url_for('books.book_detail', book_id=book.id) }}">{{ book.title }}</a></h3>
+                            <p class="article-content">Author: {{ book.author }}</p>
+                            <p class="article-content">ISBN: {{ book.isbn }}</p>
+                        </div>
+                    </article>
+                {% endif %}
             {% endfor %}
         </div>
         <div class="col-md-4">
