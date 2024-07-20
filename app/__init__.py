@@ -48,6 +48,4 @@ def create_app(config_class=Config):
     with app.app_context():
         db.create_all()
         print('Database tables created or verified.')
-
-
     return app
