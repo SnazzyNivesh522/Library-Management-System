@@ -23,9 +23,15 @@
                 <ul class="list-group">
                     <li class="list-group-item list-group-item-light"><a href="{{ url_for('books.search') }}">Search Books</a></li>
                     {% if current_user.is_authenticated %}
-                        <li class="list-group-item list-group-item-light"><a href="{{ url_for('books.recommendations') }}">Book Recommurendations</a></li>
-                        <li class="list-group-item list-group-item-light"><a href="{{ url_for('users.account') }}">My Account</a></li>
-                        <li class="list-group-item list-group-item-light"><a href="{{url_for('users.user_books',username=current_user.username)}}">Borrowed Books</a></li>
+                        {% if current_user.role in ['admin', 'librarian'] %}
+                            <li class="list-group-item list-group-item-light">
+                                <a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item list-group-item-light"><a href="{{ url_for('books.recommendations') }}">Book Recommurendations</a></li>
+                            <li class="list-group-item list-group-item-light"><a href="{{ url_for('users.account') }}">My Account</a></li>
+                            <li class="list-group-item list-group-item-light"><a href="{{url_for('users.user_books',username=current_user.username)}}">Borrowed Books</a></li>
+                        {% endif %}
                     {% else %}
                         <li class="list-group-item list-group-item-light"><a href="{{ url_for('auth.login') }}">Login</a></li>
                         <li class="list-group-item list-group-item-light"><a href="{{ url_for('auth.register') }}">Register</a></li>

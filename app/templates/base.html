@@ -19,14 +19,15 @@
                     <a class="nav-link" href="{{ url_for('books.search') }}">Search Books</a>
                 </li>
                 {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('books.recommendations') }}">Recommendations</a>
-                    </li>
+                    
                     {% if current_user.role in ['admin', 'librarian'] %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
                         </li>
                     {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('books.recommendations') }}">Recommendations</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('users.account') }}">My Account</a>
                         </li>
