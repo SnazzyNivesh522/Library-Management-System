@@ -55,7 +55,7 @@ def manage_books():
 @librarian_required
 def manage_borrowed():
     borrowed_books = BorrowedBook.query.filter_by(is_returned=False).all()
-    return render_template('admin/manage_borrowed.html', title='Manage Borrowed Books', borrowed_books=borrowed_books)
+    return render_template('admin/manage_borrowed.html', title='Manage Borrowed Books', borrowed_books=borrowed_books,timedelta=timedelta)
 
 @admin.route("/admin/reports")
 @login_required

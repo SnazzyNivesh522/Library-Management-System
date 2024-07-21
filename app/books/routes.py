@@ -217,4 +217,18 @@ def delete_book(book_id):
     flash('Your book has been deleted!', 'success')
     return redirect(url_for('books.search'))
 
+@books.route("/book/<int:book_id>/return_by_librarian", methods=['POST'])
+@login_required
+@librarian_required
+def return_book_by_librarian(book_id):
+    borrowed_book = BorrowedBook.query.filter_by(book_id=book_id, is_returned=False).first()
+    if borrowed_book:
+        borrowed_book.is_returned = True
+        borrowed_book.return_date = datetime.utcnow()
+        borrowed_book.book.quantity += 1
+        db.session.commit()
+        flash('Book returned successfully!', 'success')
+    else:
+        flash('This book is not currently borrowed.', 'danger')
+    return redirect(url_for('admin.manage_borrowed'))  # Redirect back to manage borrowed page
 # ... (rest of the routes: recommendations) ...

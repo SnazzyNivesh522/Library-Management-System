@@ -23,7 +23,9 @@
             <td>{{ borrowed.borrow_date.strftime('%Y-%m-%d') }}</td>
             <td>{{ (borrowed.borrow_date + timedelta(days=14)).strftime('%Y-%m-%d') }}</td>
             <td>
-                <a href="{{ url_for('books.return_book', book_id=borrowed.book.id) }}" class="btn btn-sm btn-primary">Return</a>
+                <form method="POST" action="{{ url_for('books.return_book_by_librarian', book_id=borrowed.book.id) }}">
+                    <button type="submit" class="btn btn-sm btn-primary">Return</button>
+                </form>
             </td>
         </tr>
         {% endfor %}
