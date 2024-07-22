@@ -1,13 +1,13 @@
-from flask import Blueprint, render_template, url_for, flash, redirect, request
+from flask import Blueprint, render_template, url_for, flash, redirect, request,abort
 from flask_login import login_required, current_user
 from app import db
-from app.models import Book, BorrowedBook,User
+from app.models import Book, BorrowedBook,User,CheckoutRequest,ReturnRequest
 from app.utils import send_email
 import requests
 from collections import Counter
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from app.books.forms import BookSearchForm, BookCheckoutForm, BookForm
+from app.books.forms import BookSearchForm, BookCheckoutForm, BookForm,BookReturnForm
 from app.utils import send_email, admin_required, librarian_required
 from datetime import datetime, timedelta
 
@@ -30,44 +30,65 @@ def search():
 def book_detail(book_id):
     book = Book.query.get_or_404(book_id)
     borrowed_by_current_user = BorrowedBook.query.filter_by(book_id=book_id, user_id=current_user.id, is_returned=False).first()
-    return render_template('books/book_detail.html', title=book.title, book=book, borrowed_by_current_user=borrowed_by_current_user)
+    checkout_form = BookCheckoutForm()
+    return_form = BookReturnForm()  # Make sure this is defined
+    return render_template(
+        "books/book_detail.html",
+        title=book.title,
+        book=book,
+        borrowed_by_current_user=borrowed_by_current_user,
+        checkout_form=checkout_form,
+        return_form=return_form,
+    )
 
-@books.route("/book/<int:book_id>/checkout", methods=['GET', 'POST'])
+@books.route("/book/<int:book_id>/checkout", methods=['POST'])
 @login_required
 def checkout_book(book_id):
     book = Book.query.get_or_404(book_id)
-    form = BookCheckoutForm()
-    if form.validate_on_submit():
-        if book.quantity > 0:
-            borrowed_book = BorrowedBook(user_id=current_user.id, book_id=book.id)
-            book.quantity -= 1
-            db.session.add(borrowed_book)
-            db.session.commit()
-            flash('Book checked out successfully!', 'success')
-            
-            # Send email notification
-            subject = f"Book Checkout: {book.title}"
-            body = f"Dear {current_user.username},\n\nYou have successfully checked out '{book.title}' by {book.author}. Please return it within 14 days.\n\nBest regards,\nLibrary Management System"
-            send_email(subject, current_user.email, body)
-            
-            return redirect(url_for('books.book_detail', book_id=book.id))
-        else:
-            flash('This book is currently unavailable.', 'danger')
-    return render_template('books/checkout.html', title='Checkout Book', form=form, book=book)
 
-@books.route("/book/<int:book_id>/return")
+    # Check if the user already has an outstanding checkout request for this book
+    existing_request = CheckoutRequest.query.filter_by(
+        user_id=current_user.id, book_id=book_id, status='pending'
+    ).first()
+    if existing_request:
+        flash('You already have a pending checkout request for this book.', 'warning')
+        return redirect(url_for('books.book_detail', book_id=book.id))
+
+    # Create a new checkout request
+    checkout_request = CheckoutRequest(user_id=current_user.id, book_id=book.id)
+    db.session.add(checkout_request)
+    db.session.commit()
+    flash('Checkout request submitted. Please wait for librarian approval.', 'info')
+    return redirect(url_for('books.book_detail', book_id=book.id))
+
+
+@books.route("/book/<int:book_id>/return", methods=['POST'])
 @login_required
 def return_book(book_id):
-    borrowed_book = BorrowedBook.query.filter_by(user_id=current_user.id, book_id=book_id, is_returned=False).first()
-    if borrowed_book:
-        borrowed_book.is_returned = True
-        borrowed_book.return_date = datetime.utcnow()
-        borrowed_book.book.quantity += 1
-        db.session.commit()
-        flash('Book returned successfully!', 'success')
-    else:
-        flash('You have not borrowed this book.', 'danger')
+    # Check if the user has borrowed the book and hasn't already requested a return
+    borrowed_book = BorrowedBook.query.filter_by(
+        user_id=current_user.id, book_id=book_id, is_returned=False
+    ).first()
+
+    if not borrowed_book:
+        flash('You have not borrowed this book or already returned it.', 'danger')
+        return redirect(url_for('books.book_detail', book_id=book_id))
+
+    existing_request = ReturnRequest.query.filter_by(
+        borrowed_book_id=borrowed_book.id, status='pending'
+    ).first()
+    if existing_request:
+        flash('You already have a pending return request for this book.', 'warning')
+        return redirect(url_for('books.book_detail', book_id=borrowed_book.book_id))
+    
+    # Create a new return request
+    return_request = ReturnRequest(borrowed_book_id=borrowed_book.id)
+    db.session.add(return_request)
+    db.session.commit()
+
+    flash('Return request submitted. Please wait for librarian approval.', 'info')
     return redirect(url_for('books.book_detail', book_id=book_id))
+
 
 @books.route("/add_book", methods=['GET', 'POST'])
 @login_required

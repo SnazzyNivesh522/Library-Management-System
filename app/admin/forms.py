@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, SubmitField
+from wtforms import StringField, IntegerField, SubmitField,SelectField
 from wtforms.validators import DataRequired, Length, NumberRange
 
 class BookForm(FlaskForm):
@@ -11,3 +11,6 @@ class BookForm(FlaskForm):
     genre = StringField('Genre', validators=[Length(max=50)])
     quantity = IntegerField('Quantity', validators=[DataRequired(), NumberRange(min=1)])
     submit = SubmitField('Submit')
+class ApproveRequestForm(FlaskForm):
+    status = SelectField('Status', choices=[('approved', 'Approve'), ('rejected', 'Reject')])
+    submit = SubmitField('Update')
