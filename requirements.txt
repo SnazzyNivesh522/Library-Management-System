@@ -11,3 +11,4 @@ google-auth
 google-auth-oauthlib
 Flask-APScheduler
 email_validator
+Flask-Mail
