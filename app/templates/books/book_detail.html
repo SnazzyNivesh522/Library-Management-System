@@ -23,20 +23,21 @@
             {% if current_user.is_authenticated %}
                 {% if book.quantity > 0 %}
                     <form method="POST" action="{{ url_for('books.checkout_book', book_id=book.id) }}">
-                        <input type="submit" value="Borrow Book" class="btn btn-primary">
+                        {{ checkout_form.hidden_tag() }} 
+                        <input type="submit" value="Request Checkout" class="btn btn-primary">
+                    </form>
+                {% elif borrowed_by_current_user %}
+                    <form method="POST" action="{{ url_for('books.return_book', book_id=book.id) }}">
+                        {{ return_form.hidden_tag() }}  
+                        <input type="submit" value="Request Return" class="btn btn-primary"> 
                     </form>
                 {% else %}
-                    {% if borrowed_by_current_user %}
-                        <p>This book is currently borrowed by you.</p>
-                        <a href="{{ url_for('books.return_book', book_id=book.id) }}" class="btn btn-primary">Return</a>
-                    {% else %}
-                        <p>This book is currently unavailable.</p>
-                    {% endif %}
+                    <p>This book is currently unavailable.</p>
                 {% endif %}
             {% else %}
                 <p>Please <a href="{{ url_for('auth.login') }}">login</a> to borrow this book.</p>
             {% endif %}
-
+            
             {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_librarian) %}
                 <div class="form-group mt-3">
                     <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('books.update_book', book_id=book.id) }}">Update Book</a>

@@ -1,0 +1,36 @@
+{% extends "base.html" %} 
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Pending {{ request_type.capitalize() }} Requests</h2>
+
+    <div class="list-group">
+        {% for request in requests %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+
+                <div>
+                    {% if request_type == 'checkout' %}
+                        {{ request.user.username }} requested to checkout {{ request.book.title }}
+                    {% elif request_type == 'return' %}
+                        {{ request.borrowed_book.borrower.username }} requested to return {{ request.borrowed_book.book.title }}
+                    {% endif %}
+                </div>
+
+                <div class="btn-group">
+                    <form method="POST" action="{{ url_for('admin.approve_request', request_type=request_type, request_id=request.id, action='approve') }}">
+                        {{ form.hidden_tag() }}
+                        <button type="submit" class="btn btn-success btn-sm mr-2">Approve</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin.approve_request', request_type=request_type, request_id=request.id, action='reject') }}">
+                        {{ form.hidden_tag() }}
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </div>
+
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock content %}

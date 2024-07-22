@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request,abort
 from flask_login import login_required, current_user
 from app import db
-from app.models import User, Book, BorrowedBook
+from app.models import User, Book, BorrowedBook,CheckoutRequest,ReturnRequest
 from app.utils import admin_required, librarian_required
 from sqlalchemy import func
 from datetime import datetime, timedelta
-from app.admin.forms import BookForm
+from app.admin.forms import BookForm,ApproveRequestForm
 
 admin = Blueprint('admin', __name__)
 
@@ -63,6 +63,66 @@ def manage_borrowed():
 def reports():
     # Generate various reports here
     return render_template('admin/reports.html', title='Reports')
+@admin.route("/admin/requests/<request_type>")  
+@login_required
+@librarian_required
+def manage_requests(request_type):
+    if request_type == 'checkout':
+        requests = CheckoutRequest.query.options(
+            db.joinedload(CheckoutRequest.user),
+            db.joinedload(CheckoutRequest.book)  # Eager load Book as well
+        ).filter_by(status='pending').all()
+    elif request_type == 'return':
+        requests = (
+            ReturnRequest.query
+            .join(BorrowedBook)
+            .join(User)
+            .filter(ReturnRequest.status == "pending")
+            .all()
+        )
+    else:
+        abort(404)
+    form = ApproveRequestForm()
+    return render_template('admin/pending_requests.html', requests=requests, form=form, request_type=request_type)
+
+
+
+@admin.route('/requests/<request_type>/<int:request_id>/<action>', methods=['POST'])
+@login_required
+@librarian_required  
+def approve_request(request_type, request_id, action):
+    if request_type == 'checkout':
+        request_to_update = CheckoutRequest.query.get_or_404(request_id)
+        book = Book.query.get_or_404(request_to_update.book_id)
+        if action == 'approve':
+            if book.quantity > 0:
+                book.quantity -= 1
+                borrowed_book = BorrowedBook(user_id=request_to_update.user_id, book_id=request_to_update.book_id)
+                db.session.add(borrowed_book)
+            else:
+                flash(f'Cannot approve checkout for {book.title}. Book is out of stock.', 'danger')
+                return redirect(url_for('admin.manage_requests', request_type=request_type))
+        elif action == 'reject':
+            # No specific action needed for rejection in this case
+            pass
+        else:
+            abort(400)  # Bad request
+    elif request_type == 'return':
+        request_to_update = ReturnRequest.query.get_or_404(request_id)
+        # Update BorrowedBook and increment book quantity only if approved
+        if action == 'approve':
+            borrowed_book = request_to_update.borrowed_book
+            borrowed_book.is_returned = True
+            borrowed_book.return_date = datetime.utcnow()
+            borrowed_book.book.quantity += 1
+    else:
+        abort(404)  # Invalid request type
+    
+    request_to_update.status = action
+    db.session.commit()
+    flash(f'{request_type.capitalize()} request {action}d!', 'success')
+    return redirect(url_for('admin.manage_requests', request_type=request_type))
+
 
 @admin.route("/admin/book/new", methods=['GET', 'POST'])
 @login_required

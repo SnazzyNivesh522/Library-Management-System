@@ -1,6 +1,8 @@
-from datetime import datetime
+from datetime import datetime,timezone,timedelta
 from app import db, login_manager
 from flask_login import UserMixin
+ist_timezone = timezone(timedelta(hours=5, minutes=30))  # Create IST timezone object
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -32,6 +34,25 @@ class BorrowedBook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
-    borrow_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    borrow_date = db.Column(db.DateTime, nullable=False, default=datetime.now(ist_timezone) )
     return_date = db.Column(db.DateTime)
     is_returned = db.Column(db.Boolean, default=False)
+
+
+class CheckoutRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.now(ist_timezone))
+    status = db.Column(db.String(20), nullable=False, default='pending')
+
+    user = db.relationship('User', backref='checkout_requests')
+    book = db.relationship('Book', backref='checkout_requests')
+class ReturnRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    borrowed_book_id = db.Column(db.Integer, db.ForeignKey('borrowed_book.id'), nullable=False) 
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.now(ist_timezone))
+    status = db.Column(db.String(20), nullable=False, default='pending')
+    
+    # Relationship to BorrowedBook
+    borrowed_book = db.relationship('BorrowedBook', backref='return_requests')
