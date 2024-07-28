@@ -52,6 +52,9 @@ def fetch_book_details_from_api(isbn):
         data = response.json()
         if 'items' in data and len(data['items']) > 0:
             volume_info = data['items'][0]['volumeInfo']
+            # for key,value in volume_info.items():
+            #     print(f"{key}: {value}")
+            # print()
             return {
                 'isbn': isbn,
                 'title': volume_info.get('title', 'Unknown'),
@@ -60,6 +63,8 @@ def fetch_book_details_from_api(isbn):
                 'year': volume_info.get('publishedDate', 'Unknown')[:4],
                 'categories': ', '.join(volume_info.get('categories', ['Unknown'])),
                 'description': volume_info.get('description', ''),
-                'image_link': volume_info.get('imageLinks', {}).get('thumbnail', '')
+                'image_link': volume_info.get('imageLinks', {}).get('thumbnail', ''),
+                'pageCount':volume_info.get('pageCount'),
+                'language': volume_info.get('language')
             }
     return None
