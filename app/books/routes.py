@@ -96,7 +96,6 @@ def return_book(book_id):
 @login_required
 @librarian_required
 def add_book():
-<<<<<<< HEAD
     isbn_form = ISBNSearchForm()
     book_form = BookForm()
     
@@ -125,39 +124,7 @@ def add_book():
         return redirect(url_for('books.book_detail', book_id=new_book.id))
     
     return render_template('books/add_book.html', isbn_form=isbn_form, book_form=book_form)
-=======
-    if current_user.role not in ['admin', 'librarian']:
-        flash('You do not have permission to add books.', 'danger')
-        return redirect(url_for('main.home'))
 
-    if request.method == 'POST':
-        isbn = request.form.get('isbn')
-        response=fetch_book_details_from_api(isbn=isbn)
-        if response:
-        # response = requests.get(f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}')
-        # if response.status_code == 200:
-        #     book_data = response.json()
-        #     if 'items' in book_data and len(book_data['items']) > 0:
-        #         volume_info = book_data['items'][0]['volumeInfo']
-        #         new_book = Book(
-        #             isbn=isbn,
-        #             title=volume_info.get('title', 'Unknown'),
-        #             authors=', '.join(volume_info.get('authors', ['Unknown'])),
-        #             publisher=volume_info.get('publisher', 'Unknown'),
-        #             year=volume_info.get('publishedDate', 'Unknown')[:4],
-        #             categories=', '.join(volume_info.get('categories', ['Unknown'])),
-        #             quantity=1
-        #         )
-            new_book=Book(isbn=response['isbn'],title=response['title'],authors=response['authors'],publisher=response['publisher'],year=response['year'],categories=response['categories'],description=response['description'],pageCount=response['pageCount'],language=response['language'],quantity=1,imageLink=response['image_link'])
-            db.session.add(new_book)
-            db.session.commit()
-            flash('Book added successfully!', 'success')
-            return redirect(url_for('books.book_detail', book_id=new_book.id))
-        else:
-            flash('Book not found with the given ISBN.', 'danger')
-    else:
-        flash('Error fetching book data. Please try again.', 'danger')
->>>>>>> books_api
 
 
 @books.route("/confirm_book", methods=['POST'])
