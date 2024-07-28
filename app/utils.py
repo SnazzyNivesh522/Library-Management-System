@@ -5,7 +5,6 @@ from flask import abort
 from flask_login import current_user
 from flask import current_app
 from flask_mail import Message
-import requests
 from app import mail
 import requests
 
