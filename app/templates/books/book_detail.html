@@ -19,8 +19,9 @@
             <p><strong>Year:</strong> {{ book.year }}</p>
             <p><strong>Genre:</strong> {{ book.categories }}</p>
             <p><strong>Language:</strong> {{ book.language }}</p>
-            <p><strong>Pages:</strong> {{ book.pages }}</p>
+            <p><strong>Pages:</strong> {{ book.pageCount }}</p>
             <p><strong>Available Copies:</strong> {{ book.quantity }}</p>
+            {% if book.description %}
             <p class="book-description">
                 <span class="short-description">{{ book.description[:200] }}{% if book.description|length > 200 %}...{% endif %}</span>
                 <span class="full-description" style="display: none;">{{ book.description }}</span>
@@ -28,6 +29,7 @@
                     <a href="#" class="read-more-link">Read More</a>
                 {% endif %}
             </p>
+            {% endif %}
 
             {% if current_user.is_authenticated %}
                 {% if book.quantity > 0 %}
