@@ -10,6 +10,7 @@ import numpy as np
 from app.books.forms import BookSearchForm, BookCheckoutForm, BookForm,BookReturnForm
 from app.utils import send_email, admin_required, librarian_required
 from datetime import datetime, timedelta
+from app.utils import fetch_book_details_from_api
 
 books = Blueprint('books', __name__)
 
@@ -20,7 +21,7 @@ def search():
         query = form.query.data
         books = Book.query.filter(
             (Book.title.like(f'%{query}%')) |
-            (Book.author.like(f'%{query}%')) |
+            (Book.authors.like(f'%{query}%')) |
             (Book.isbn.like(f'%{query}%'))
         ).all()
         return render_template('books/search_results.html', books=books, query=query)
@@ -99,28 +100,31 @@ def add_book():
 
     if request.method == 'POST':
         isbn = request.form.get('isbn')
-        response = requests.get(f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}')
-        if response.status_code == 200:
-            book_data = response.json()
-            if 'items' in book_data and len(book_data['items']) > 0:
-                volume_info = book_data['items'][0]['volumeInfo']
-                new_book = Book(
-                    isbn=isbn,
-                    title=volume_info.get('title', 'Unknown'),
-                    author=', '.join(volume_info.get('authors', ['Unknown'])),
-                    publisher=volume_info.get('publisher', 'Unknown'),
-                    year=volume_info.get('publishedDate', 'Unknown')[:4],
-                    genre=', '.join(volume_info.get('categories', ['Unknown'])),
-                    quantity=1
-                )
-                db.session.add(new_book)
-                db.session.commit()
-                flash('Book added successfully!', 'success')
-                return redirect(url_for('books.book_detail', book_id=new_book.id))
-            else:
-                flash('Book not found with the given ISBN.', 'danger')
+        response=fetch_book_details_from_api(isbn=isbn)
+        if response:
+        # response = requests.get(f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}')
+        # if response.status_code == 200:
+        #     book_data = response.json()
+        #     if 'items' in book_data and len(book_data['items']) > 0:
+        #         volume_info = book_data['items'][0]['volumeInfo']
+        #         new_book = Book(
+        #             isbn=isbn,
+        #             title=volume_info.get('title', 'Unknown'),
+        #             authors=', '.join(volume_info.get('authors', ['Unknown'])),
+        #             publisher=volume_info.get('publisher', 'Unknown'),
+        #             year=volume_info.get('publishedDate', 'Unknown')[:4],
+        #             categories=', '.join(volume_info.get('categories', ['Unknown'])),
+        #             quantity=1
+        #         )
+            new_book=Book(isbn=response['isbn'],title=response['title'],authors=response['authors'],publisher=response['publisher'],year=response['year'],categories=response['categories'],description=response['description'],pageCount=response['pageCount'],language=response['language'],quantity=1,imageLink=response['image_link'])
+            db.session.add(new_book)
+            db.session.commit()
+            flash('Book added successfully!', 'success')
+            return redirect(url_for('books.book_detail', book_id=new_book.id))
         else:
-            flash('Error fetching book data. Please try again.', 'danger')
+            flash('Book not found with the given ISBN.', 'danger')
+    else:
+        flash('Error fetching book data. Please try again.', 'danger')
 
     return render_template('books/add_book.html', title='Add Book')
 

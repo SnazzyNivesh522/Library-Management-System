@@ -59,7 +59,7 @@ def fetch_book_details_from_api(isbn):
             return {
                 'isbn': isbn,
                 'title': volume_info.get('title', 'Unknown'),
-                'author': ', '.join(volume_info.get('authors', ['Unknown'])),
+                'authors': ', '.join(volume_info.get('authors', ['Unknown'])),
                 'publisher': volume_info.get('publisher', 'Unknown'),
                 'year': volume_info.get('publishedDate', 'Unknown')[:4],
                 'categories': ', '.join(volume_info.get('categories', ['Unknown'])),

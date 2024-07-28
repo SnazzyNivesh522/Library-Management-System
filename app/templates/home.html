@@ -10,7 +10,7 @@
                     <article class="media content-section">
                         <div class="media-body">
                             <h3><a class="article-title" href="{{ url_for('books.book_detail', book_id=book.id) }}">{{ book.title }}</a></h3>
-                            <p class="article-content">Author: {{ book.author }}</p>
+                            <p class="article-content">Author: {{ book.authors }}</p>
                             <p class="article-content">ISBN: {{ book.isbn }}</p>
                         </div>
                     </article>

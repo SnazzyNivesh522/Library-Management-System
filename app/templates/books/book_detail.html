@@ -6,30 +6,39 @@
 
     <div class="row">
         <div class="col-md-4">
-            {% if book.image_link %}
-                <img src="{{ book.image_link }}" alt="{{ book.title }} Cover" class="img-fluid">
+            {% if book.imageLink %}
+                <img src="{{ book.imageLink }}" alt="{{ book.title }} Cover" class="img-fluid">
             {% else %}
                 <img src="{{ url_for('static', filename='images/default_book_cover.jpg') }}" alt="Default Book Cover" class="img-fluid">
             {% endif %}
         </div>
         <div class="col-md-8">
-            <p><strong>Author:</strong> {{ book.author }}</p>
+            <p><strong>Author:</strong> {{ book.authors }}</p>
             <p><strong>ISBN:</strong> {{ book.isbn }}</p>
             <p><strong>Publisher:</strong> {{ book.publisher }}</p>
             <p><strong>Year:</strong> {{ book.year }}</p>
-            <p><strong>Genre:</strong> {{ book.genre }}</p>
+            <p><strong>Genre:</strong> {{ book.categories }}</p>
+            <p><strong>Language:</strong> {{ book.language }}</p>
+            <p><strong>Pages:</strong> {{ book.pages }}</p>
             <p><strong>Available Copies:</strong> {{ book.quantity }}</p>
+            <p class="book-description">
+                <span class="short-description">{{ book.description[:200] }}{% if book.description|length > 200 %}...{% endif %}</span>
+                <span class="full-description" style="display: none;">{{ book.description }}</span>
+                {% if book.description|length > 200 %}
+                    <a href="#" class="read-more-link">Read More</a>
+                {% endif %}
+            </p>
 
             {% if current_user.is_authenticated %}
                 {% if book.quantity > 0 %}
                     <form method="POST" action="{{ url_for('books.checkout_book', book_id=book.id) }}">
-                        {{ checkout_form.hidden_tag() }} 
+                        {{ checkout_form.hidden_tag() }}
                         <input type="submit" value="Request Checkout" class="btn btn-primary">
                     </form>
                 {% elif borrowed_by_current_user %}
                     <form method="POST" action="{{ url_for('books.return_book', book_id=book.id) }}">
-                        {{ return_form.hidden_tag() }}  
-                        <input type="submit" value="Request Return" class="btn btn-primary"> 
+                        {{ return_form.hidden_tag() }}
+                        <input type="submit" value="Request Return" class="btn btn-primary">
                     </form>
                 {% else %}
                     <p>This book is currently unavailable.</p>
@@ -37,7 +46,7 @@
             {% else %}
                 <p>Please <a href="{{ url_for('auth.login') }}">login</a> to borrow this book.</p>
             {% endif %}
-            
+
             {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_librarian) %}
                 <div class="form-group mt-3">
                     <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('books.update_book', book_id=book.id) }}">Update Book</a>
@@ -50,7 +59,7 @@
     </div>
 
     <hr>
-    
+
     <h3 class="mt-4">Recommendations:</h3>
     {% if recommendations %}
         <div class="row">
@@ -64,7 +73,7 @@
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title"><a href="{{ url_for('books.book_detail', book_id=recommendation.id) }}">{{ recommendation.title }}</a></h5>
-                            <p class="card-text">by {{ recommendation.author }}</p>
+                            <p class="card-text">by {{ recommendation.authors }}</p>
                         </div>
                     </div>
                 </div>
@@ -73,6 +82,32 @@
     {% else %}
         <p>No recommendations available at this time.</p>
     {% endif %}
-
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const readMoreLinks = document.querySelectorAll('.read-more-link'); // Select all links
+
+        readMoreLinks.forEach(readMoreLink => {  // Iterate over each link
+            readMoreLink.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                // Find the description elements relative to the clicked link
+                const bookDescription = readMoreLink.closest('.book-description');
+                const shortDescription = bookDescription.querySelector('.short-description');
+                const fullDescription = bookDescription.querySelector('.full-description');
+
+                if (shortDescription.style.display === 'none') {
+                    shortDescription.style.display = 'inline';
+                    fullDescription.style.display = 'none';
+                    readMoreLink.textContent = 'Read More';
+                } else {
+                    shortDescription.style.display = 'none';
+                    fullDescription.style.display = 'inline';
+                    readMoreLink.textContent = 'Read Less';
+                }
+            });
+        });
+    });
+</script>
 {% endblock content %}
