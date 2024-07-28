@@ -4,7 +4,7 @@ from app import db
 from app.models import User, Book, BorrowedBook,CheckoutRequest,ReturnRequest
 from app.utils import admin_required, librarian_required
 from sqlalchemy import func
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,timezone
 from app.admin.forms import BookForm,ApproveRequestForm
 
 admin = Blueprint('admin', __name__)
@@ -18,7 +18,7 @@ def admin_dashboard():
     total_borrowed = BorrowedBook.query.filter_by(is_returned=False).count()
     
     # Books borrowed in the last 30 days
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    thirty_days_ago = datetime.now(timezone.utc)  - timedelta(days=30)
     recent_borrows = BorrowedBook.query.filter(BorrowedBook.borrow_date >= thirty_days_ago).count()
     
     # Most borrowed books
