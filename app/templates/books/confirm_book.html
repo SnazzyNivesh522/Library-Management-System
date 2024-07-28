@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="content-section">
+    <h1>Confirm Book Details</h1>
+    <div class="row">
+        <div class="col-md-4">
+            {% if book_details.image_link %}
+                <img src="{{ book_details.image_link }}" alt="{{ book_details.title }} Cover" class="img-fluid">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/default_book_cover.jpg') }}" alt="Default Book Cover" class="img-fluid">
+            {% endif %}
+        </div>
+        <div class="col-md-8">
+            <form method="POST" action="{{ url_for('books.add_book') }}">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.isbn.label(class="form-control-label") }}
+                    {{ form.isbn(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.title.label(class="form-control-label") }}
+                    {{ form.title(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.author.label(class="form-control-label") }}
+                    {{ form.author(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.publisher.label(class="form-control-label") }}
+                    {{ form.publisher(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.year.label(class="form-control-label") }}
+                    {{ form.year(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.genre.label(class="form-control-label") }}
+                    {{ form.genre(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.quantity.label(class="form-control-label") }}
+                    {{ form.quantity(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
