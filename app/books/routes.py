@@ -7,8 +7,7 @@ import requests
 from collections import Counter
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from app.books.forms import BookSearchForm, BookCheckoutForm, BookForm,BookReturnForm,ISBNSearchForm
-from app.utils import fetch_book_details_from_api
+from app.books.forms import BookSearchForm, BookCheckoutForm, BookForm,BookReturnForm
 from app.utils import send_email, admin_required, librarian_required
 from datetime import datetime, timedelta
 from app.utils import fetch_book_details_from_api
@@ -94,59 +93,41 @@ def return_book(book_id):
 
 @books.route("/add_book", methods=['GET', 'POST'])
 @login_required
-@librarian_required
 def add_book():
-    isbn_form = ISBNSearchForm()
-    book_form = BookForm()
-    
-    if isbn_form.validate_on_submit():
-        isbn = isbn_form.isbn.data
-        book_details = fetch_book_details_from_api(isbn)
-        if book_details:
-            book_form = BookForm(data=book_details)
-            return render_template('books/confirm_book.html', form=book_form, book_details=book_details)
+    if current_user.role not in ['admin', 'librarian']:
+        flash('You do not have permission to add books.', 'danger')
+        return redirect(url_for('main.home'))
+
+    if request.method == 'POST':
+        isbn = request.form.get('isbn')
+        response=fetch_book_details_from_api(isbn=isbn)
+        if response:
+        # response = requests.get(f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}')
+        # if response.status_code == 200:
+        #     book_data = response.json()
+        #     if 'items' in book_data and len(book_data['items']) > 0:
+        #         volume_info = book_data['items'][0]['volumeInfo']
+        #         new_book = Book(
+        #             isbn=isbn,
+        #             title=volume_info.get('title', 'Unknown'),
+        #             authors=', '.join(volume_info.get('authors', ['Unknown'])),
+        #             publisher=volume_info.get('publisher', 'Unknown'),
+        #             year=volume_info.get('publishedDate', 'Unknown')[:4],
+        #             categories=', '.join(volume_info.get('categories', ['Unknown'])),
+        #             quantity=1
+        #         )
+            new_book=Book(isbn=response['isbn'],title=response['title'],authors=response['authors'],publisher=response['publisher'],year=response['year'],categories=response['categories'],description=response['description'],pageCount=response['pageCount'],language=response['language'],quantity=1,imageLink=response['image_link'])
+            db.session.add(new_book)
+            db.session.commit()
+            flash('Book added successfully!', 'success')
+            return redirect(url_for('books.book_detail', book_id=new_book.id))
         else:
             flash('Book not found with the given ISBN.', 'danger')
-    
-    if book_form.validate_on_submit():
-        new_book = Book(
-            isbn=book_form.isbn.data,
-            title=book_form.title.data,
-            author=book_form.author.data,
-            publisher=book_form.publisher.data,
-            year=book_form.year.data,
-            categoriesgenre=book_form.categories.data,
-            quantity=book_form.quantity.data
-        )
-        db.session.add(new_book)
-        db.session.commit()
-        flash('Book added successfully!', 'success')
-        return redirect(url_for('books.book_detail', book_id=new_book.id))
-    
-    return render_template('books/add_book.html', isbn_form=isbn_form, book_form=book_form)
+    else:
+        flash('Error fetching book data. Please try again.', 'danger')
 
+    return render_template('books/add_book.html', title='Add Book')
 
-
-@books.route("/confirm_book", methods=['POST'])
-@login_required
-@librarian_required
-def confirm_book():
-    form = BookForm()
-    if form.validate_on_submit():
-        new_book = Book(
-            isbn=form.isbn.data,
-            title=form.title.data,
-            author=form.author.data,
-            publisher=form.publisher.data,
-            year=form.year.data,
-            categories=form.categories.data,
-            quantity=form.quantity.data
-        )
-        db.session.add(new_book)
-        db.session.commit()
-        flash('Book added successfully!', 'success')
-        return redirect(url_for('books.book_detail', book_id=new_book.id))
-    return render_template('books/edit_book.html', form=form)
 @books.route("/recommendations")
 @login_required
 def recommendations():

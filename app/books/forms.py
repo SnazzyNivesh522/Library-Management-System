@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, IntegerField
+from wtforms import StringField, SubmitField, IntegerField,SelectField
 from wtforms.validators import DataRequired, Length, ValidationError
 from app.models import Book
 
@@ -26,8 +26,5 @@ class BookForm(FlaskForm):
         existing_book = Book.query.filter_by(isbn=isbn.data).first()
         if existing_book:
             raise ValidationError('A book with this ISBN already exists.')
-class ISBNSearchForm(FlaskForm):
-    isbn = StringField('ISBN', validators=[DataRequired(), Length(min=10, max=13)])
-    submit = SubmitField('Search')
         
 
