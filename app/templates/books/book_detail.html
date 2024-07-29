@@ -22,9 +22,10 @@
             <p><strong>Pages:</strong> {{ book.pageCount }}</p>
             <p><strong>Available Copies:</strong> {{ book.quantity }}</p>
             {% if book.description %}
+            <p><strong>Description:</strong></p>
             <p class="book-description">
-                <span class="short-description">{{ book.description[:200] }}{% if book.description|length > 200 %}...{% endif %}</span>
-                <span class="full-description" style="display: none;">{{ book.description }}</span>
+                <span class="short-description">{{ book.description[:200]|safe }}{% if book.description|length > 200 %}...{% endif %}</span>
+                <span class="full-description" style="display: none;">{{ book.description|safe }}</span>
                 {% if book.description|length > 200 %}
                     <a href="#" class="read-more-link">Read More</a>
                 {% endif %}

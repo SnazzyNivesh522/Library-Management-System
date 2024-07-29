@@ -52,20 +52,21 @@ def fetch_book_details_from_api(isbn):
     if response.status_code == 200:
         data = response.json()
         if 'items' in data and len(data['items']) > 0:
-            volume_info = data['items'][0]['volumeInfo']
-            # for key,value in volume_info.items():
-            #     print(f"{key}: {value}")
-            # print()
-            return {
-                'isbn': isbn,
-                'title': volume_info.get('title', 'Unknown'),
-                'authors': ', '.join(volume_info.get('authors', ['Unknown'])),
-                'publisher': volume_info.get('publisher', 'Unknown'),
-                'year': volume_info.get('publishedDate', 'Unknown')[:4],
-                'categories': ', '.join(volume_info.get('categories', ['Unknown'])),
-                'description': volume_info.get('description', ''),
-                'image_link': volume_info.get('imageLinks', {}).get('thumbnail', ''),
-                'pageCount':volume_info.get('pageCount'),
-                'language': volume_info.get('language')
-            }
+            selfLink=data['items'][0]['selfLink']
+            response=requests.get(selfLink)
+            data = response.json()
+            if response.status_code == 200:
+                volume_info = data['volumeInfo']
+                return {
+                    'isbn': isbn,
+                    'title': volume_info.get('title', 'Unknown'),
+                    'authors': ', '.join(volume_info.get('authors', ['Unknown'])),
+                    'publisher': volume_info.get('publisher', 'Unknown'),
+                    'year': volume_info.get('publishedDate', 'Unknown')[:4],
+                    'categories': ', '.join(volume_info.get('categories', ['Unknown'])),
+                    'description': volume_info.get('description', ''),
+                    'image_link': volume_info.get('imageLinks', {}).get('thumbnail', ''),
+                    'pageCount':volume_info.get('pageCount'),
+                    'language': volume_info.get('language')
+                }
     return None

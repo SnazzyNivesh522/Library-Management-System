@@ -93,36 +93,25 @@ def return_book(book_id):
 
 @books.route("/add_book", methods=['GET', 'POST'])
 @login_required
+@librarian_required
 def add_book():
-    if current_user.role not in ['admin', 'librarian']:
-        flash('You do not have permission to add books.', 'danger')
-        return redirect(url_for('main.home'))
-
     if request.method == 'POST':
         isbn = request.form.get('isbn')
-        response=fetch_book_details_from_api(isbn=isbn)
-        if response:
-        # response = requests.get(f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}')
-        # if response.status_code == 200:
-        #     book_data = response.json()
-        #     if 'items' in book_data and len(book_data['items']) > 0:
-        #         volume_info = book_data['items'][0]['volumeInfo']
-        #         new_book = Book(
-        #             isbn=isbn,
-        #             title=volume_info.get('title', 'Unknown'),
-        #             authors=', '.join(volume_info.get('authors', ['Unknown'])),
-        #             publisher=volume_info.get('publisher', 'Unknown'),
-        #             year=volume_info.get('publishedDate', 'Unknown')[:4],
-        #             categories=', '.join(volume_info.get('categories', ['Unknown'])),
-        #             quantity=1
-        #         )
-            new_book=Book(isbn=response['isbn'],title=response['title'],authors=response['authors'],publisher=response['publisher'],year=response['year'],categories=response['categories'],description=response['description'],pageCount=response['pageCount'],language=response['language'],quantity=1,imageLink=response['image_link'])
-            db.session.add(new_book)
-            db.session.commit()
-            flash('Book added successfully!', 'success')
-            return redirect(url_for('books.book_detail', book_id=new_book.id))
+        existing_book=Book.query.filter_by(isbn=isbn).first()
+        
+        if existing_book:
+            flash("A book with this ISBN already exists.", "danger")
+            return redirect(url_for('books.update_book', book_id=existing_book.id))  
         else:
-            flash('Book not found with the given ISBN.', 'danger')
+            response=fetch_book_details_from_api(isbn=isbn)
+            if response:
+                new_book=Book(isbn=response['isbn'],title=response['title'],authors=response['authors'],publisher=response['publisher'],year=response['year'],categories=response['categories'],description=response['description'],pageCount=response['pageCount'],language=response['language'],quantity=1,imageLink=response['image_link'])
+                db.session.add(new_book)
+                db.session.commit()
+                flash('Book added successfully!', 'success')
+                return redirect(url_for('books.book_detail', book_id=new_book.id))
+            else:
+                flash('Book not found with the given ISBN.', 'danger')
     else:
         flash('Error fetching book data. Please try again.', 'danger')
 
@@ -213,10 +202,10 @@ def update_book(book_id):
     if form.validate_on_submit():
         book.isbn = form.isbn.data
         book.title = form.title.data
-        book.author = form.author.data
+        book.authors = form.author.data
         book.publisher = form.publisher.data
         book.year = form.year.data
-        book.genre = form.genre.data
+        book.categories= form.genre.data
         book.quantity = form.quantity.data
         db.session.commit()
         flash('Your book has been updated!', 'success')
@@ -224,10 +213,10 @@ def update_book(book_id):
     elif request.method == 'GET':
         form.isbn.data = book.isbn
         form.title.data = book.title
-        form.author.data = book.author
+        form.author.data = book.authors
         form.publisher.data = book.publisher
         form.year.data = book.year
-        form.genre.data = book.genre
+        form.genre.data = book.categories
         form.quantity.data = book.quantity
     return render_template('books/new_book.html', title='Update Book',
                            form=form, legend='Update Book')
