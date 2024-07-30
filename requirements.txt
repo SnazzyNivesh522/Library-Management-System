@@ -12,3 +12,6 @@ google-auth-oauthlib
 Flask-APScheduler
 email_validator
 Flask-Mail
+pillow
+scikit-learn
+numpy
